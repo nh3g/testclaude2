@@ -22,7 +22,7 @@ users=$@
 function arquivar(){
   if [ -z "$PROJECT_NAME" ]; then
     echo "Erro: Nome do projeto não especificado"
-    echo "Uso: $0 --arquivar <nome_do_projeto>"
+    echo "Uso: $0 <nome_do_projeto> --arquivar"
     exit 1
   fi
 
@@ -56,30 +56,8 @@ function arquivar(){
   echo "Backup: /root/$PROJECT_NAME"
 }
 
-function show_help(){
-  echo "Uso: $0 [OPÇÃO] <nome_do_projeto>"
-  echo ""
-  echo "Opções:"
-  echo "  --arquivar <nome_do_projeto>  Arquiva o vault do projeto especificado"
-  echo "  --help                        Mostra esta mensagem de ajuda"
-  echo ""
-  echo "Sem opções: Executa o deploy do vault com o nome do projeto especificado"
-  echo ""
-  echo "Exemplos:"
-  echo "  $0 projeto01                  Deploy do vault para projeto01"
-  echo "  $0 --arquivar projeto01       Arquiva o vault do projeto01"
-  echo "  $0 --help                     Mostra esta ajuda"
-}
-
-# Parse de argumentos
-if [ "$1" == "--help" ]; then
-  show_help
-  exit 0
-fi
-
-if [ "$1" == "--arquivar" ]; then
-  PROJECT_NAME=$2
-  PROJECT_DIR="$WORKDIR/$PROJECT_NAME"
+# Verifica se foi passado --arquivar como segundo argumento
+if [ "$2" == "--arquivar" ]; then
   arquivar
   exit 0
 fi
