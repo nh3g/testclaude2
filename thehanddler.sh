@@ -1,1 +1,194 @@
-"#!/bin/bash\nPROJECT_NAME=$1\nOPERATORS_FILE=\"/home/fff37/scripts/operators\"\nWORKDIR=\"/projects\"\nPROJECT_DIR=\"$WORKDIR/$PROJECT_NAME\"\n#rm -rf /projects/delete01/\nfunction install () {\n  apt install tree pwgen -y\n}\n\nfunction report (){\n  echo abcde\n}\n\nfunction access(){\necho \"access\"\nusers=$@\n\n\n}\n\n# echo cleaning\n# rm -rf $PROJECT_DIR\n# userdel -f -r testehandler\n# groupdel testeproject\n# groupdel operators\n\necho \"[+] Creating the directory structure\"\nif [ -e $WORKDIR ]\nthen\n  echo \"$WORKDIR FOUND\"\nelse\n  echo \"$WORKDIR missing, creating...\"\n  mkdir $WORKDIR\nfi\n\nif [ -e $PROJECT_DIR ]\nthen echo \"$PROJECT_DIR FOUND\"\n  echo \"Manual assessment is required, exiting...\"\n  exit\nelse\n  echo \"$PROJET_DIR  missing, creating...\"\n  mkdir $PROJECT_DIR\nfi\n\n#mkdir -p $PROJECT_DIR/vault\nmkdir -p $PROJECT_DIR/targets # targets/host/dumps targets/host/exploits target/host/recon\nmkdir -p $PROJECT_DIR/screenshots\nmkdir -p $PROJECT_DIR/logs\nmkdir -p $PROJECT_DIR/operators\n#HOME=\"$PROJECT_DIR/op/\"\n# git clone project template\n\n#GITURL=\"git@github.com:Unidade37/project-template.git\" #  $PROJECT_DIR/vault\n#git clone git@github.com:Unidade37/obsidian-vault-u37.git \n\n#$PROJECT_DIR/vault\n## new template 2025 - foppa 21-09-2025\ncp -rp /root/template-2025 $PROJECT_DIR/vault\n\n#git clone git@github.com:Unidade37/project-template.git  $PROJECT_DIR/vault\n#git clone git@github.com:Unidade37/project-template.git  $PROJECT_DIR/vault\n# Create a luks block\n# open\n# create the project FHS\n# set the team members permissions\n\n  check=$(getent group operators 1>/dev/null ; echo $?)\n  if [ $check -eq 0 ]; then\n     echo \"group operators already exist\"\n  else\n     echo \"creating group operators\"\n     groupadd operators\n  fi\n\n#IFS=\", \"\nfor op in $OPERATORS; do echo $op ;done\n echo $OPERATORS_FILE\nfor operator in $(cat $OPERATORS_FILE  | tr -d '\"' | cut -d \",\" -f 1,-9 );do\n  echo $operator\n  check=$(getent group $PROJECT_NAME 1>/dev/null ; echo $?)\n  if [ $check -eq 0 ]; then\n     echo \"group $PROJECT_NAME already exist\"\n  else\n     echo \"creating group $PROJECT_NAME\"\n     groupadd $PROJECT_NAME\n  fi\n  check=$(getent passwd $operator 1>/dev/null ; echo $?)\n  if [ $check -eq 0 ]; then\n     echo \"user $operator already exist, adding to group $PROJECT_NAME\"\n     usermod -aG $PROJECT_NAME $operator\n  else\n     echo \"creating user $operator\"\n     useradd -c \"Usuário de Operação\" -g operators -G $PROJECT_NAME  -s /bin/bash -m  -d /home/$operator  $operator\n     cp /home/fff37/scripts/Obsidian.desktop /home/$operator/Desktop/Obsidian.desktop\n     chown $operator:operators /home/$operator/Desktop/Obsidian.desktop\n     ln -s /projects/$PROJECT_NAME  /home/$operator/Desktop/$PROJECT_NAME\n     #useradd -c \"Usuário de Operação\" -g operators -G $PROJECT_NAME  -s /bin/sh -d $HOME/$operator $operator\n     #useradd -c \"Usuário de Operação\" -g operators -G $PROJECT_NAME -M -s /bin/sh -d /projects $operator\n     password=$(pwgen -sy 16 -N 1)\n     echo \"Seting password for user\"\n     echo $operator:$password | chpasswd\n     echo \"DONE: $operator:$password\"\n     password=\"cleaninnnggggg\"\n  fi\n#  USERLIST=\"$USERLIST $operator\"\n#  mkdir -p $PROJECT_DIR/operators/$operator\n#  cp -rp $PROJECT_DIR/vault/.obsidian \"$PROJECT_DIR/vault/.$operator\"\ndone\n\n\n# TODO - Copiar o .obsidian p/ cada operador\ntree -R -d  $PROJECT_DIR\necho \"[-] Updating the $PROJECT_DIR ACL to group $PROJECT_NAME\" \n#setfacl -R -d  g:$PROJECT_NAME:rwx $PROJECT_DIR/\nsetfacl -d -R -m g:$PROJECT_NAME:rwx $PROJECT_DIR/\n\necho \"Changing the $PROJECT_DIR ownership to root and group to $PROJECT_NAME\"\nchown -R root:$PROJECT_NAME $PROJECT_DIR\necho \"Changing the directory $PROJECT_DIR permissions to 760\"\nchmod g+ws -R $PROJECT_DIR\necho $USERLIST\n#access $USERLIST\ngetent passwd $USERLIST\ngetent group $PROJECT_NAME\n\n#echo \"Use the following command to access the SSFHS:\"\n#echo \"net use X: \\\\sshfs\\fff37@10.0.0.3\"\necho \"Configuration for Obsidian in Kasm: /share/$PROJECT_NAME/vault/\""
+#!/bin/bash
+PROJECT_NAME=$1
+OPERATORS_FILE="/home/fff37/scripts/operators"
+WORKDIR="/projects"
+PROJECT_DIR="$WORKDIR/$PROJECT_NAME"
+#rm -rf /projects/delete01/
+function install () {
+  apt install tree pwgen -y
+}
+
+function report (){
+  echo abcde
+}
+
+function access(){
+echo "access"
+users=$@
+
+
+}
+
+function arquivar(){
+  if [ -z "$PROJECT_NAME" ]; then
+    echo "Erro: Nome do projeto não especificado"
+    echo "Uso: $0 --arquivar <nome_do_projeto>"
+    exit 1
+  fi
+
+  ARCHIVE_DATE=$(date +%Y-%m-%d)
+  ARCHIVE_DIR="/projects/archived/$ARCHIVE_DATE"
+
+  echo "[+] Verificando se o vault existe..."
+  if [ ! -d "$PROJECT_DIR/vault" ]; then
+    echo "Erro: Vault $PROJECT_DIR/vault não encontrado ou já foi arquivado"
+    exit 1
+  fi
+  echo "Vault encontrado: $PROJECT_DIR/vault"
+
+  echo "[+] Criando diretório de arquivo..."
+  mkdir -p "$ARCHIVE_DIR"
+
+  echo "[+] Movendo vault para arquivo..."
+  mv "$PROJECT_DIR/vault" "$ARCHIVE_DIR/${PROJECT_NAME}_vault"
+
+  echo "[+] Compactando vault arquivado..."
+  cd "$ARCHIVE_DIR" && tar -czf "${PROJECT_NAME}_vault_${ARCHIVE_DATE}.tar.gz" "${PROJECT_NAME}_vault" && rm -rf "${PROJECT_NAME}_vault"
+
+  echo "[+] Movendo projeto para /root..."
+  mv "$PROJECT_DIR" /root/
+
+  echo "[+] Definindo permissões (read-only)..."
+  chmod 400 -R "/root/$PROJECT_NAME"
+
+  echo "[+] Vault $PROJECT_NAME arquivado com sucesso!"
+  echo "Arquivo: $ARCHIVE_DIR/${PROJECT_NAME}_vault_${ARCHIVE_DATE}.tar.gz"
+  echo "Backup: /root/$PROJECT_NAME"
+}
+
+function show_help(){
+  echo "Uso: $0 [OPÇÃO] <nome_do_projeto>"
+  echo ""
+  echo "Opções:"
+  echo "  --arquivar <nome_do_projeto>  Arquiva o vault do projeto especificado"
+  echo "  --help                        Mostra esta mensagem de ajuda"
+  echo ""
+  echo "Sem opções: Executa o deploy do vault com o nome do projeto especificado"
+  echo ""
+  echo "Exemplos:"
+  echo "  $0 projeto01                  Deploy do vault para projeto01"
+  echo "  $0 --arquivar projeto01       Arquiva o vault do projeto01"
+  echo "  $0 --help                     Mostra esta ajuda"
+}
+
+# Parse de argumentos
+if [ "$1" == "--help" ]; then
+  show_help
+  exit 0
+fi
+
+if [ "$1" == "--arquivar" ]; then
+  PROJECT_NAME=$2
+  PROJECT_DIR="$WORKDIR/$PROJECT_NAME"
+  arquivar
+  exit 0
+fi
+
+# echo cleaning
+# rm -rf $PROJECT_DIR
+# userdel -f -r testehandler
+# groupdel testeproject
+# groupdel operators
+
+echo "[+] Creating the directory structure"
+if [ -e $WORKDIR ]
+then
+  echo "$WORKDIR FOUND"
+else
+  echo "$WORKDIR missing, creating..."
+  mkdir $WORKDIR
+fi
+
+if [ -e $PROJECT_DIR ]
+then echo "$PROJECT_DIR FOUND"
+  echo "Manual assessment is required, exiting..."
+  exit
+else
+  echo "$PROJET_DIR  missing, creating..."
+  mkdir $PROJECT_DIR
+fi
+
+#mkdir -p $PROJECT_DIR/vault
+mkdir -p $PROJECT_DIR/targets # targets/host/dumps targets/host/exploits target/host/recon
+mkdir -p $PROJECT_DIR/screenshots
+mkdir -p $PROJECT_DIR/logs
+mkdir -p $PROJECT_DIR/operators
+#HOME="$PROJECT_DIR/op/"
+# git clone project template
+
+#GITURL="git@github.com:Unidade37/project-template.git" #  $PROJECT_DIR/vault
+#git clone git@github.com:Unidade37/obsidian-vault-u37.git
+
+#$PROJECT_DIR/vault
+## new template 2025 - foppa 21-09-2025
+cp -rp /root/template-2025 $PROJECT_DIR/vault
+
+#git clone git@github.com:Unidade37/project-template.git  $PROJECT_DIR/vault
+#git clone git@github.com:Unidade37/project-template.git  $PROJECT_DIR/vault
+# Create a luks block
+# open
+# create the project FHS
+# set the team members permissions
+
+  check=$(getent group operators 1>/dev/null ; echo $?)
+  if [ $check -eq 0 ]; then
+     echo "group operators already exist"
+  else
+     echo "creating group operators"
+     groupadd operators
+  fi
+
+#IFS=", "
+for op in $OPERATORS; do echo $op ;done
+ echo $OPERATORS_FILE
+for operator in $(cat $OPERATORS_FILE  | tr -d '"' | cut -d "," -f 1,-9 );do
+  echo $operator
+  check=$(getent group $PROJECT_NAME 1>/dev/null ; echo $?)
+  if [ $check -eq 0 ]; then
+     echo "group $PROJECT_NAME already exist"
+  else
+     echo "creating group $PROJECT_NAME"
+     groupadd $PROJECT_NAME
+  fi
+  check=$(getent passwd $operator 1>/dev/null ; echo $?)
+  if [ $check -eq 0 ]; then
+     echo "user $operator already exist, adding to group $PROJECT_NAME"
+     usermod -aG $PROJECT_NAME $operator
+  else
+     echo "creating user $operator"
+     useradd -c "Usuário de Operação" -g operators -G $PROJECT_NAME  -s /bin/bash -m  -d /home/$operator  $operator
+     cp /home/fff37/scripts/Obsidian.desktop /home/$operator/Desktop/Obsidian.desktop
+     chown $operator:operators /home/$operator/Desktop/Obsidian.desktop
+     ln -s /projects/$PROJECT_NAME  /home/$operator/Desktop/$PROJECT_NAME
+     #useradd -c "Usuário de Operação" -g operators -G $PROJECT_NAME  -s /bin/sh -d $HOME/$operator $operator
+     #useradd -c "Usuário de Operação" -g operators -G $PROJECT_NAME -M -s /bin/sh -d /projects $operator
+     password=$(pwgen -sy 16 -N 1)
+     echo "Seting password for user"
+     echo $operator:$password | chpasswd
+     echo "DONE: $operator:$password"
+     password="cleaninnnggggg"
+  fi
+#  USERLIST="$USERLIST $operator"
+#  mkdir -p $PROJECT_DIR/operators/$operator
+#  cp -rp $PROJECT_DIR/vault/.obsidian "$PROJECT_DIR/vault/.$operator"
+done
+
+
+# TODO - Copiar o .obsidian p/ cada operador
+tree -R -d  $PROJECT_DIR
+echo "[-] Updating the $PROJECT_DIR ACL to group $PROJECT_NAME"
+#setfacl -R -d  g:$PROJECT_NAME:rwx $PROJECT_DIR/
+setfacl -d -R -m g:$PROJECT_NAME:rwx $PROJECT_DIR/
+
+echo "Changing the $PROJECT_DIR ownership to root and group to $PROJECT_NAME"
+chown -R root:$PROJECT_NAME $PROJECT_DIR
+echo "Changing the directory $PROJECT_DIR permissions to 760"
+chmod g+ws -R $PROJECT_DIR
+echo $USERLIST
+#access $USERLIST
+getent passwd $USERLIST
+getent group $PROJECT_NAME
+
+#echo "Use the following command to access the SSFHS:"
+#echo "net use X: \\sshfs\fff37@10.0.0.3"
+echo "Configuration for Obsidian in Kasm: /share/$PROJECT_NAME/vault/"
