@@ -19,22 +19,46 @@ users=$@
 
 }
 
-function show_help(){
-  echo "Uso: $0 <nome_do_projeto>"
-  echo ""
-  echo "Opções:"
-  echo "  --help                        Mostra esta mensagem de ajuda"
-  echo ""
-  echo "Executa o deploy do vault com o nome do projeto especificado"
-  echo ""
-  echo "Exemplos:"
-  echo "  $0 projeto01                  Deploy do vault para projeto01"
-  echo "  $0 --help                     Mostra esta ajuda"
+function arquivar(){
+  if [ -z "$PROJECT_NAME" ]; then
+    echo "Erro: Nome do projeto não especificado"
+    echo "Uso: $0 <nome_do_projeto> --arquivar"
+    exit 1
+  fi
+
+  ARCHIVE_DATE=$(date +%Y-%m-%d)
+  ARCHIVE_DIR="/projects/archived/$ARCHIVE_DATE"
+
+  echo "[+] Verificando se o vault existe..."
+  if [ ! -d "$PROJECT_DIR/vault" ]; then
+    echo "Erro: Vault $PROJECT_DIR/vault não encontrado ou já foi arquivado"
+    exit 1
+  fi
+  echo "Vault encontrado: $PROJECT_DIR/vault"
+
+  echo "[+] Criando diretório de arquivo..."
+  mkdir -p "$ARCHIVE_DIR"
+
+  echo "[+] Movendo vault para arquivo..."
+  mv "$PROJECT_DIR/vault" "$ARCHIVE_DIR/${PROJECT_NAME}_vault"
+
+  echo "[+] Compactando vault arquivado..."
+  cd "$ARCHIVE_DIR" && tar -czf "${PROJECT_NAME}_vault_${ARCHIVE_DATE}.tar.gz" "${PROJECT_NAME}_vault" && rm -rf "${PROJECT_NAME}_vault"
+
+  echo "[+] Movendo projeto para /root..."
+  mv "$PROJECT_DIR" /root/
+
+  echo "[+] Definindo permissões (read-only)..."
+  chmod 400 -R "/root/$PROJECT_NAME"
+
+  echo "[+] Vault $PROJECT_NAME arquivado com sucesso!"
+  echo "Arquivo: $ARCHIVE_DIR/${PROJECT_NAME}_vault_${ARCHIVE_DATE}.tar.gz"
+  echo "Backup: /root/$PROJECT_NAME"
 }
 
-# Parse de argumentos
-if [ "$1" == "--help" ]; then
-  show_help
+# Verifica se foi passado --arquivar como segundo argumento
+if [ "$2" == "--arquivar" ]; then
+  arquivar
   exit 0
 fi
 
