@@ -1,0 +1,784 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "228bd12d-16ce-4025-beb1-e771ffb3465f",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -592,
+        -64
+      ],
+      "id": "e926bda4-18fc-4b71-b4c7-5968812dd074",
+      "name": "Webhook",
+      "webhookId": "228bd12d-16ce-4025-beb1-e771ffb3465f"
+    },
+    {
+      "parameters": {
+        "resource": "item",
+        "site": {
+          "__rl": true,
+          "value": "unit37.sharepoint.com,6f581734-b862-467e-8f97-0ef000812730,c82f74d3-f9d6-4145-a769-3826a0688840",
+          "mode": "list",
+          "cachedResultName": "UNITernal-37"
+        },
+        "list": {
+          "__rl": true,
+          "value": "2a22dbc7-c80c-4316-93ba-65b2a5c6d36e",
+          "mode": "list",
+          "cachedResultName": "Engajamentos"
+        },
+        "limit": 2000,
+        "options": {
+          "fields": [
+            "fields"
+          ]
+        },
+        "simplify": false,
+        "requestOptions": {}
+      },
+      "name": "Buscar Engajamentos",
+      "type": "n8n-nodes-base.microsoftSharePoint",
+      "position": [
+        -400,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "0eb78723-6bdd-41d9-a29f-306d7356ee9d",
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "vAvrOo7hsPw6xKY2",
+          "name": "Microsoft SharePoint account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c4e4b5f5-5e5b-4e91-b9e8-3f8c8d8e9e5a",
+              "leftValue": "={{ $json.fields.ID }}",
+              "rightValue": "={{ $('Webhook').item.json.query.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -64
+      ],
+      "id": "a59b2bc5-963c-4ac0-ac05-87613a55d52d",
+      "name": "Filtrar por ID"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8e9f7a6b-5c4d-3a2b-1e9f-8d7c6b5a4e3d",
+              "name": "vault_name",
+              "value": "={{ $json.fields.field_1 }}",
+              "type": "string"
+            },
+            {
+              "id": "7d6c5b4a-3e2d-1c9b-8e7f-6a5b4c3d2e1a",
+              "name": "project_id",
+              "value": "={{ $json.fields.ID }}",
+              "type": "number"
+            },
+            {
+              "id": "6b5a4c3d-2e1a-9b8c-7e5f-4a3b2c1d9e8a",
+              "name": "client",
+              "value": "={{ $json.fields.field_19 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "5895fe05-91ee-423c-b13c-996a80d350ec",
+      "name": "Extrair Nome do Projeto"
+    },
+    {
+      "parameters": {
+        "command": "=sudo /home/fff37/scripts/theHandler2.sh \"{{ $json.vault_name }}\" | tee -a /tmp/log-deploy"
+      },
+      "id": "15db539e-73fa-47a4-a2d9-f689b272efcc",
+      "name": "Criar Vault via SSH",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -64
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "sshPassword": {
+          "id": "bkPatPqJ1N8A4eSw",
+          "name": "Kasm-fff37"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "item",
+        "operation": "update",
+        "site": {
+          "__rl": true,
+          "value": "unit37.sharepoint.com,6f581734-b862-467e-8f97-0ef000812730,c82f74d3-f9d6-4145-a769-3826a0688840",
+          "mode": "list",
+          "cachedResultName": "UNITernal-37"
+        },
+        "list": {
+          "__rl": true,
+          "value": "2a22dbc7-c80c-4316-93ba-65b2a5c6d36e",
+          "mode": "list",
+          "cachedResultName": "Engajamentos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Extrair Nome do Projeto').item.json.project_id }}",
+            "StatusVault": "Deployado"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "field_1",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "name",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_11",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Status",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Hold",
+                  "value": "Hold"
+                },
+                {
+                  "name": "Aguardando Cliente",
+                  "value": "Aguardando Cliente"
+                },
+                {
+                  "name": "Aguardando Aprovação Interna",
+                  "value": "Aguardando Aprovação Interna"
+                },
+                {
+                  "name": "Aguardando Liderança",
+                  "value": "Aguardando Liderança"
+                },
+                {
+                  "name": "Em Planejamento",
+                  "value": "Em Planejamento"
+                },
+                {
+                  "name": "Aguardando Kickoff",
+                  "value": "Aguardando Kickoff"
+                },
+                {
+                  "name": "Alocação de Equipe",
+                  "value": "Alocação de Equipe"
+                },
+                {
+                  "name": "Agendado",
+                  "value": "Agendado"
+                },
+                {
+                  "name": "Aguardando Briefing Interno",
+                  "value": "Aguardando Briefing Interno"
+                },
+                {
+                  "name": "Pronto para Iniciar",
+                  "value": "Pronto para Iniciar"
+                },
+                {
+                  "name": "Em Andamento",
+                  "value": "Em Andamento"
+                },
+                {
+                  "name": "Entregue",
+                  "value": "Entregue"
+                },
+                {
+                  "name": "Cancelado",
+                  "value": "Cancelado"
+                },
+                {
+                  "name": "Debrief",
+                  "value": "Debrief"
+                },
+                {
+                  "name": "Feedback 1-1",
+                  "value": "Feedback 1-1"
+                },
+                {
+                  "name": "Pesquisa de Satisfação",
+                  "value": "Pesquisa de Satisfação"
+                },
+                {
+                  "name": "Novo",
+                  "value": "Novo"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "field_19",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Contratante",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [],
+              "removed": true
+            },
+            {
+              "id": "field_15",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "property_priority",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "01_Urgente",
+                  "value": "01_Urgente"
+                },
+                {
+                  "name": "02_Alta",
+                  "value": "02_Alta"
+                },
+                {
+                  "name": "03_Moderada",
+                  "value": "03_Moderada"
+                },
+                {
+                  "name": "04_Baixa",
+                  "value": "04_Baixa"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "field_16",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Tipo",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "BlackBox",
+                  "value": "BlackBox"
+                },
+                {
+                  "name": "GreyBox",
+                  "value": "GreyBox"
+                },
+                {
+                  "name": "Pendente",
+                  "value": "Pendente"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "EsteiraT_x00e1_tica",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Esteira Tática",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Mobile",
+                  "value": "Mobile"
+                },
+                {
+                  "name": "Web & API",
+                  "value": "Web & API"
+                },
+                {
+                  "name": "Kraken Team (OPS)",
+                  "value": "Kraken Team (OPS)"
+                },
+                {
+                  "name": "Silver Team (OPS)",
+                  "value": "Silver Team (OPS)"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "Staff",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Staff",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Respons_x00e1_vel",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Responsável",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_21",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Tags",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "OP_x002d_ID",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "OP-ID",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_8",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "canal_slack",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_18",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Descricao",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_17",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Escopo",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_4",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "sharepoint",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_6",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "horas_previstas",
+              "readOnly": false,
+              "required": false,
+              "type": "number",
+              "removed": true
+            },
+            {
+              "id": "field_12",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Informações de Alocação",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "CodContrato",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Cod Contrato",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Cronograma",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Cronograma",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DatadeKickoff",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data de Kickoff",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "DatadeBriefing",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data de Briefing",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "field_9",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "data de inicio",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "DatadeDocumenta_x00e7__x00e3_o",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data de Documentação",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "DatadeRevis_x00e3_o",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data de Revisão",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "field_10",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "data encerramento",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "DataRealFinal",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data Real Final",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "field_2",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "url",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Etapas",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Etapas",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Etapa 01",
+                  "value": "Etapa 01"
+                },
+                {
+                  "name": "Etapa 02",
+                  "value": "Etapa 02"
+                },
+                {
+                  "name": "Etapa 03",
+                  "value": "Etapa 03"
+                },
+                {
+                  "name": "Etapa 04",
+                  "value": "Etapa 04"
+                },
+                {
+                  "name": "Etapa 05",
+                  "value": "Etapa 05"
+                },
+                {
+                  "name": "Etapa 06",
+                  "value": "Etapa 06"
+                },
+                {
+                  "name": "Etapa 07",
+                  "value": "Etapa 07"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "REQUISITOS",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "REQUISITOS",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Title",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "VaultActions",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Vault Actions",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "SlackActions",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Slack Actions",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "StatusVault",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Status Vault",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendente",
+                  "value": "Pendente"
+                },
+                {
+                  "name": "Deployado",
+                  "value": "Deployado"
+                },
+                {
+                  "name": "Arquivado",
+                  "value": "Arquivado"
+                }
+              ]
+            },
+            {
+              "id": "id",
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "ID",
+              "readOnly": true,
+              "required": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "requestOptions": {}
+      },
+      "name": "Buscar Engajamentos3",
+      "type": "n8n-nodes-base.microsoftSharePoint",
+      "position": [
+        416,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "3285fd32-6a6d-44a1-abc3-e8b8b4c155d1",
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "vAvrOo7hsPw6xKY2",
+          "name": "Microsoft SharePoint account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Buscar Engajamentos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Engajamentos": {
+      "main": [
+        [
+          {
+            "node": "Filtrar por ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar por ID": {
+      "main": [
+        [
+          {
+            "node": "Extrair Nome do Projeto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Nome do Projeto": {
+      "main": [
+        [
+          {
+            "node": "Criar Vault via SSH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Vault via SSH": {
+      "main": [
+        [
+          {
+            "node": "Buscar Engajamentos3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2a261a5fc51fb7309c4265f6ce109895951cd8dcaaf81b76675067cbaed0bc7e"
+  }
+}

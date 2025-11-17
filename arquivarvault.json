@@ -1,0 +1,1106 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "command": "=sudo mv /projects/{{ $('Extrair Info do Projeto1').item.json.vault_name }} /root/"
+      },
+      "id": "f3b92eb3-45f9-4087-842f-f435e518b446",
+      "name": "Mover Vault para Root",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        848,
+        736
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "sshPassword": {
+          "id": "bkPatPqJ1N8A4eSw",
+          "name": "Kasm-fff37"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=sudo chmod 400 /root/{{ $('Extrair Info do Projeto1').item.json.vault_name }} -R"
+      },
+      "id": "d61d1048-6a17-41c8-b297-c10951de9f96",
+      "name": "Definir Permissões (Read-only)",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        736
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "sshPassword": {
+          "id": "bkPatPqJ1N8A4eSw",
+          "name": "Kasm-fff37"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "archive-vault-webhook-uuid2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -992,
+        832
+      ],
+      "id": "d9d034ab-cad7-4671-b7b5-2e05793d101b",
+      "name": "Webhook Arquivar1",
+      "webhookId": "archive-vault-webhook-uuid"
+    },
+    {
+      "parameters": {
+        "resource": "item",
+        "site": {
+          "__rl": true,
+          "value": "unit37.sharepoint.com,6f581734-b862-467e-8f97-0ef000812730,c82f74d3-f9d6-4145-a769-3826a0688840",
+          "mode": "list",
+          "cachedResultName": "UNITernal-37"
+        },
+        "list": {
+          "__rl": true,
+          "value": "2a22dbc7-c80c-4316-93ba-65b2a5c6d36e",
+          "mode": "list",
+          "cachedResultName": "Engajamentos"
+        },
+        "limit": 2000,
+        "options": {
+          "fields": [
+            "fields"
+          ]
+        },
+        "simplify": false,
+        "requestOptions": {}
+      },
+      "name": "Buscar Engajamentos2",
+      "type": "n8n-nodes-base.microsoftSharePoint",
+      "position": [
+        -800,
+        832
+      ],
+      "typeVersion": 1,
+      "id": "a620437e-86ba-497b-8da4-5f604d5e92ed",
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "vAvrOo7hsPw6xKY2",
+          "name": "Microsoft SharePoint account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "filter-condition-001",
+              "leftValue": "={{ $json.fields.ID }}",
+              "rightValue": "={{ $('Webhook Arquivar1').item.json.query.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        832
+      ],
+      "id": "01ef70e3-e8b2-46e6-96bf-481aed8ab9af",
+      "name": "Filtrar por ID2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assign-vault-name",
+              "name": "vault_name",
+              "value": "={{ $json.fields.field_1 }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-project-id",
+              "name": "project_id",
+              "value": "={{ $json.fields.ID }}",
+              "type": "number"
+            },
+            {
+              "id": "assign-client",
+              "name": "client",
+              "value": "={{ $json.fields.field_19 }}",
+              "type": "string"
+            },
+            {
+              "id": "assign-archive-date",
+              "name": "archive_date",
+              "value": "={{ $now.format('yyyy-MM-dd') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        832
+      ],
+      "id": "48c7e917-437e-4652-9bfe-da80394dabbe",
+      "name": "Extrair Info do Projeto1"
+    },
+    {
+      "parameters": {
+        "command": "=ls -la /projects/{{ $json.vault_name }}/vault 2>&1 || echo \"VAULT_NOT_FOUND\""
+      },
+      "id": "8907cd8c-4dee-4841-b32a-9f18ca88af68",
+      "name": "Verificar se Vault Existe1",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        832
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "sshPassword": {
+          "id": "bkPatPqJ1N8A4eSw",
+          "name": "Kasm-fff37"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-vault-output",
+              "leftValue": "={{ $json.stdout }}",
+              "rightValue": "VAULT_NOT_FOUND",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        16,
+        832
+      ],
+      "id": "f01c90ba-6fa4-4a20-9f77-852c11bb3594",
+      "name": "Vault Existe?1"
+    },
+    {
+      "parameters": {
+        "command": "=mkdir -p /projects/archived/{{ $('Extrair Info do Projeto1').item.json.archive_date }}"
+      },
+      "id": "88a6b992-2847-4b13-8a05-524d2412c58e",
+      "name": "Criar Diretório de Arquivo1",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        224,
+        736
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "sshPassword": {
+          "id": "bkPatPqJ1N8A4eSw",
+          "name": "Kasm-fff37"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=mv /projects/{{ $('Extrair Info do Projeto1').item.json.vault_name }}/vault /projects/archived/{{ $('Extrair Info do Projeto1').item.json.archive_date }}/{{ $('Extrair Info do Projeto1').item.json.vault_name }}_vault"
+      },
+      "id": "25b8c856-5b43-4899-9424-a80633176405",
+      "name": "Mover Vault para Arquivo1",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        432,
+        736
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "sshPassword": {
+          "id": "bkPatPqJ1N8A4eSw",
+          "name": "Kasm-fff37"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=cd /projects/archived/{{ $('Extrair Info do Projeto1').item.json.archive_date }} && tar -czf {{ $('Extrair Info do Projeto1').item.json.vault_name }}_vault_{{ $('Extrair Info do Projeto1').item.json.archive_date }}.tar.gz {{ $('Extrair Info do Projeto1').item.json.vault_name }}_vault && rm -rf {{ $('Extrair Info do Projeto1').item.json.vault_name }}_vault"
+      },
+      "id": "51d86ded-ae14-4b03-bdb6-50b133adf1f7",
+      "name": "Zipar Vault Arquivado1",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        640,
+        736
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "sshPassword": {
+          "id": "bkPatPqJ1N8A4eSw",
+          "name": "Kasm-fff37"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "success-message",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "success-msg-text",
+              "name": "message",
+              "value": "=Vault {{ $('Extrair Info do Projeto1').item.json.vault_name }} arquivado com sucesso!",
+              "type": "string"
+            },
+            {
+              "id": "archive-path",
+              "name": "archive_path",
+              "value": "=/projects/archived/{{ $('Extrair Info do Projeto1').item.json.archive_date }}/{{ $('Extrair Info do Projeto1').item.json.vault_name }}_vault_{{ $('Extrair Info do Projeto1').item.json.archive_date }}.tar.gz",
+              "type": "string"
+            },
+            {
+              "id": "root-path",
+              "name": "root_backup_path",
+              "value": "=/root/{{ $('Extrair Info do Projeto1').item.json.vault_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1264,
+        736
+      ],
+      "id": "856241f3-c16e-4c7c-80ee-3f2fe1044841",
+      "name": "Resposta de Sucesso1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "error-status",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "error-msg",
+              "name": "message",
+              "value": "=Vault {{ $('Extrair Info do Projeto1').item.json.vault_name }} não encontrado ou já foi arquivado",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        928
+      ],
+      "id": "b01f5969-8877-439c-bc11-e9d03ff47f80",
+      "name": "Vault Não Encontrado1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1504,
+        912
+      ],
+      "id": "9e512c73-7526-43d7-81ac-698820dea9d7",
+      "name": "Consolidar Resposta1"
+    },
+    {
+      "parameters": {
+        "resource": "item",
+        "operation": "update",
+        "site": {
+          "__rl": true,
+          "value": "unit37.sharepoint.com,6f581734-b862-467e-8f97-0ef000812730,c82f74d3-f9d6-4145-a769-3826a0688840",
+          "mode": "list",
+          "cachedResultName": "UNITernal-37"
+        },
+        "list": {
+          "__rl": true,
+          "value": "2a22dbc7-c80c-4316-93ba-65b2a5c6d36e",
+          "mode": "list",
+          "cachedResultName": "Engajamentos"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Extrair Info do Projeto1').item.json.project_id }}",
+            "StatusVault": "Arquivado"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "field_1",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "name",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_11",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Status",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Hold",
+                  "value": "Hold"
+                },
+                {
+                  "name": "Aguardando Cliente",
+                  "value": "Aguardando Cliente"
+                },
+                {
+                  "name": "Aguardando Aprovação Interna",
+                  "value": "Aguardando Aprovação Interna"
+                },
+                {
+                  "name": "Aguardando Liderança",
+                  "value": "Aguardando Liderança"
+                },
+                {
+                  "name": "Em Planejamento",
+                  "value": "Em Planejamento"
+                },
+                {
+                  "name": "Aguardando Kickoff",
+                  "value": "Aguardando Kickoff"
+                },
+                {
+                  "name": "Alocação de Equipe",
+                  "value": "Alocação de Equipe"
+                },
+                {
+                  "name": "Agendado",
+                  "value": "Agendado"
+                },
+                {
+                  "name": "Aguardando Briefing Interno",
+                  "value": "Aguardando Briefing Interno"
+                },
+                {
+                  "name": "Pronto para Iniciar",
+                  "value": "Pronto para Iniciar"
+                },
+                {
+                  "name": "Em Andamento",
+                  "value": "Em Andamento"
+                },
+                {
+                  "name": "Entregue",
+                  "value": "Entregue"
+                },
+                {
+                  "name": "Cancelado",
+                  "value": "Cancelado"
+                },
+                {
+                  "name": "Debrief",
+                  "value": "Debrief"
+                },
+                {
+                  "name": "Feedback 1-1",
+                  "value": "Feedback 1-1"
+                },
+                {
+                  "name": "Pesquisa de Satisfação",
+                  "value": "Pesquisa de Satisfação"
+                },
+                {
+                  "name": "Novo",
+                  "value": "Novo"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "field_19",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Contratante",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [],
+              "removed": true
+            },
+            {
+              "id": "field_15",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "property_priority",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "01_Urgente",
+                  "value": "01_Urgente"
+                },
+                {
+                  "name": "02_Alta",
+                  "value": "02_Alta"
+                },
+                {
+                  "name": "03_Moderada",
+                  "value": "03_Moderada"
+                },
+                {
+                  "name": "04_Baixa",
+                  "value": "04_Baixa"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "field_16",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Tipo",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "BlackBox",
+                  "value": "BlackBox"
+                },
+                {
+                  "name": "GreyBox",
+                  "value": "GreyBox"
+                },
+                {
+                  "name": "Pendente",
+                  "value": "Pendente"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "EsteiraT_x00e1_tica",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Esteira Tática",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Mobile",
+                  "value": "Mobile"
+                },
+                {
+                  "name": "Web & API",
+                  "value": "Web & API"
+                },
+                {
+                  "name": "Kraken Team (OPS)",
+                  "value": "Kraken Team (OPS)"
+                },
+                {
+                  "name": "Silver Team (OPS)",
+                  "value": "Silver Team (OPS)"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "Staff",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Staff",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Respons_x00e1_vel",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Responsável",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_21",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Tags",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "OP_x002d_ID",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "OP-ID",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_8",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "canal_slack",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_18",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Descricao",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_17",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Escopo",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_4",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "sharepoint",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "field_6",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "horas_previstas",
+              "readOnly": false,
+              "required": false,
+              "type": "number",
+              "removed": true
+            },
+            {
+              "id": "field_12",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Informações de Alocação",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "CodContrato",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Cod Contrato",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Cronograma",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Cronograma",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "DatadeKickoff",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data de Kickoff",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "DatadeBriefing",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data de Briefing",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "field_9",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "data de inicio",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "DatadeDocumenta_x00e7__x00e3_o",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data de Documentação",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "DatadeRevis_x00e3_o",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data de Revisão",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "field_10",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "data encerramento",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "DataRealFinal",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Data Real Final",
+              "readOnly": false,
+              "required": false,
+              "type": "dateTime",
+              "removed": true
+            },
+            {
+              "id": "field_2",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "url",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Etapas",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Etapas",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Etapa 01",
+                  "value": "Etapa 01"
+                },
+                {
+                  "name": "Etapa 02",
+                  "value": "Etapa 02"
+                },
+                {
+                  "name": "Etapa 03",
+                  "value": "Etapa 03"
+                },
+                {
+                  "name": "Etapa 04",
+                  "value": "Etapa 04"
+                },
+                {
+                  "name": "Etapa 05",
+                  "value": "Etapa 05"
+                },
+                {
+                  "name": "Etapa 06",
+                  "value": "Etapa 06"
+                },
+                {
+                  "name": "Etapa 07",
+                  "value": "Etapa 07"
+                }
+              ],
+              "removed": true
+            },
+            {
+              "id": "REQUISITOS",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "REQUISITOS",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Title",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "VaultActions",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Vault Actions",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "SlackActions",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Slack Actions",
+              "readOnly": false,
+              "required": false,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "StatusVault",
+              "canBeUsedToMatch": false,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "Status Vault",
+              "readOnly": false,
+              "required": false,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendente",
+                  "value": "Pendente"
+                },
+                {
+                  "name": "Deployado",
+                  "value": "Deployado"
+                },
+                {
+                  "name": "Arquivado",
+                  "value": "Arquivado"
+                }
+              ]
+            },
+            {
+              "id": "id",
+              "canBeUsedToMatch": true,
+              "defaultMatch": false,
+              "display": true,
+              "displayName": "ID",
+              "readOnly": true,
+              "required": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "requestOptions": {}
+      },
+      "name": "Buscar Engajamentos5",
+      "type": "n8n-nodes-base.microsoftSharePoint",
+      "position": [
+        1504,
+        736
+      ],
+      "typeVersion": 1,
+      "id": "77833e33-3e56-497a-9e26-02d61b10a69d",
+      "credentials": {
+        "microsoftSharePointOAuth2Api": {
+          "id": "vAvrOo7hsPw6xKY2",
+          "name": "Microsoft SharePoint account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Mover Vault para Root": {
+      "main": [
+        [
+          {
+            "node": "Definir Permissões (Read-only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir Permissões (Read-only)": {
+      "main": [
+        [
+          {
+            "node": "Resposta de Sucesso1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Arquivar1": {
+      "main": [
+        [
+          {
+            "node": "Buscar Engajamentos2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Engajamentos2": {
+      "main": [
+        [
+          {
+            "node": "Filtrar por ID2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar por ID2": {
+      "main": [
+        [
+          {
+            "node": "Extrair Info do Projeto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Info do Projeto1": {
+      "main": [
+        [
+          {
+            "node": "Verificar se Vault Existe1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar se Vault Existe1": {
+      "main": [
+        [
+          {
+            "node": "Vault Existe?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vault Existe?1": {
+      "main": [
+        [
+          {
+            "node": "Criar Diretório de Arquivo1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Vault Não Encontrado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Diretório de Arquivo1": {
+      "main": [
+        [
+          {
+            "node": "Mover Vault para Arquivo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mover Vault para Arquivo1": {
+      "main": [
+        [
+          {
+            "node": "Zipar Vault Arquivado1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zipar Vault Arquivado1": {
+      "main": [
+        [
+          {
+            "node": "Mover Vault para Root",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta de Sucesso1": {
+      "main": [
+        [
+          {
+            "node": "Consolidar Resposta1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Buscar Engajamentos5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vault Não Encontrado1": {
+      "main": [
+        [
+          {
+            "node": "Consolidar Resposta1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2a261a5fc51fb7309c4265f6ce109895951cd8dcaaf81b76675067cbaed0bc7e"
+  }
+}
